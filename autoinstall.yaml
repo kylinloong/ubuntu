@@ -1,0 +1,54 @@
+#cloud-config
+autoinstall:
+  version: 1
+  identity:
+    hostname: ubuntu-desktop
+    password: "$6$OQ2v9Ivf$EidT2a1NpBbQy1fgI5h93QVfx0TzRbK/OxlFl4/sd4ZcYDU5G7RmXb9vbs1Pcx/7hP22zHFyxXXR1AaEsOMk5/"
+    username: tuanjie
+  ssh:
+    install-server: true
+  storage:
+    layout:
+      name: custom
+    config:
+      - id: disk0
+        type: disk
+        match:
+          size: largest
+        ptable: gpt
+        wipe: superblock-recursive
+        preserve: false
+        grub_device: true
+        device: /dev/sdb
+      - id: disk0-efi
+        type: partition
+        size: 512M
+        flag: boot, esp  # UEFI 引导所需的 ESP 分区
+        device: disk0
+      - id: disk0-root
+        type: partition
+        size: -1
+        device: disk0
+      - id: btrfs-root
+        type: format
+        fstype: btrfs
+        volume: disk0-root
+      - id: btrfs-subvol-root
+        type: mount
+        device: btrfs-root
+        path: /
+        create:
+          subvolume: @
+      - id: btrfs-subvol-home
+        type: mount
+        device: btrfs-root
+        path: /home
+        create:
+          subvolume: @home
+  locale: zh_CN  # 设置系统语言为简体中文
+  timezone: Asia/Shanghai  # 设置时区为中国上海
+  keyboard:
+    layout: cn  # 设置键盘布局为中文
+  packages:
+    - ubuntu-desktop
+
